@@ -76,13 +76,14 @@ class CameraController:
         else:
             # 🔹 RAW Bayer → aplicar demosaicing
             raw = data.reshape((self.height, self.width))
-
+            print(raw.shape)
+            print(data.shape)
             # ⚠️ IMPORTANTE: el patrón depende del sensor → probar RG/GB/BG/GR
             # Aquí uso RGGB por defecto
-            bgr = cv2.cvtColor(raw, cv2.COLOR_BayerRG2BGR)
+            bgr = cv2.cvtColor(raw, cv2.COLOR_BayerBG2BGR)
 
             # Corrección de gamma
-            gamma = 1.8
+            gamma = 1.0
             table = np.array(
                 [(i / 255.0) ** (1 / gamma) * 255 for i in np.arange(256)]
             ).astype("uint8")
@@ -119,7 +120,7 @@ class CameraController:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"{timestamp}.png"
             filepath = os.path.join(self.save_dir, filename)
-            cv2.imwrite(filepath, cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR))
+            cv2.imwrite(filepath, rgb_img)
 
             print(f"✅ Imagen guardada: {filepath}")
             return filename, rgb_img
