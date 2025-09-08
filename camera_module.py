@@ -44,7 +44,7 @@ class CameraController:
         # Verificar si soporta RGB directo
         self.use_rgb_direct = False
         if "RGB8Packed" in supported_formats:
-            print("✅ Usando PixelFormat = RGB8Packed (la cámara envía RGB directo)")
+            print("Usando PixelFormat = RGB8Packed (la cámara envía RGB directo)")
             self.device.set_string_feature_value("PixelFormat", "RGB8Packed")
             self.use_rgb_direct = True
         else:
