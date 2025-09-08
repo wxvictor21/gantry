@@ -19,9 +19,9 @@ class CameraController:
         try:
             self.device.set_string_feature_value("UserSetSelector", "Default")
             self.cam.execute_command("UserSetLoad")
-            print("✅ Configuración de fábrica cargada")
+            print("Configuración de fábrica cargada")
         except Exception as e:
-            print(f"⚠️ No se pudo aplicar UserSet Default: {e}")
+            print(f"No se pudo aplicar UserSet Default: {e}")
 
         # Resolución después del reset
         self.width = self.device.get_integer_feature_value("Width")
@@ -48,7 +48,7 @@ class CameraController:
             self.device.set_string_feature_value("PixelFormat", "RGB8Packed")
             self.use_rgb_direct = True
         else:
-            print("⚠️ Cámara no soporta RGB8Packed, se usará RAW Bayer + demosaicing")
+            print("Cámara no soporta RGB8Packed, se usará RAW Bayer + demosaicing")
 
         # Configuración de trigger software
         self.device.set_string_feature_value("TriggerMode", "On")
@@ -78,7 +78,7 @@ class CameraController:
             raw = data.reshape((self.height, self.width))
             print(raw.shape)
             print(data.shape)
-            # ⚠️ IMPORTANTE: el patrón depende del sensor → probar RG/GB/BG/GR
+            # IMPORTANTE: el patrón depende del sensor → probar RG/GB/BG/GR
             # Aquí uso RGGB por defecto
             bgr = cv2.cvtColor(raw, cv2.COLOR_BayerBG2BGR)
 
@@ -94,7 +94,7 @@ class CameraController:
                 wb = cv2.xphoto.createSimpleWB()
                 bgr = wb.balanceWhite(bgr)
             except Exception:
-                print("⚠️ cv2.xphoto no disponible → sin balance de blancos")
+                print("cv2.xphoto no disponible → sin balance de blancos")
 
             rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
 
@@ -122,9 +122,9 @@ class CameraController:
             filepath = os.path.join(self.save_dir, filename)
             cv2.imwrite(filepath, rgb_img)
 
-            print(f"✅ Imagen guardada: {filepath}")
+            print(f"Imagen guardada: {filepath}")
             return filename, rgb_img
         else:
-            print("❌ No se recibió ningún frame")
+            print("No se recibió ningún frame")
             return None, None
 
