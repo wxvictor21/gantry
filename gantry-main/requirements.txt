@@ -1,0 +1,6 @@
+Flask
+flask-cors
+pyserial
+numpy
+opencv-python
+python-aravis
