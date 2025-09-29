@@ -21,7 +21,7 @@ class CameraController:
             self.cam.execute_command("UserSetLoad")
             print("Configuración de fábrica cargada")
         except Exception as e:
-            print(f"No se pudo aplicar UserSet Default: {e}")
+            print(f"Advertencia: No se pudo aplicar UserSet Default (posiblemente acceso denegado o cámara en uso): {e}")
 
         # Resolución después del reset
         self.width = self.device.get_integer_feature_value("Width")
@@ -30,6 +30,7 @@ class CameraController:
 
         # ───────────────────────────────
         # Detectar PixelFormats soportados
+        supported_formats = []
         try:
             formats = self.device.get_available_enumeration_feature_values("PixelFormat")
             supported_formats = [
@@ -37,9 +38,10 @@ class CameraController:
                 for f in formats
             ]
             print("Formatos soportados:", supported_formats)
+        except AttributeError:
+            print("Advertencia: 'get_available_enumeration_feature_values' no disponible. Asumiendo que RGB8Packed no es directamente soportado.")
         except Exception as e:
             print(f"No se pudo leer PixelFormats: {e}")
-            supported_formats = []
 
         # Verificar si soporta RGB directo
         self.use_rgb_direct = False
@@ -63,7 +65,7 @@ class CameraController:
             self.software_trigger = True
             print("TriggerMode=On (Software) configurado")
         except Exception as e:
-            print(f"No se pudo activar TriggerMode/Source: {e}")
+            print(f"Advertencia: No se pudo activar TriggerMode/Source (posiblemente acceso denegado o no soportado): {e}")
             print("⚠️ La cámara continuará en modo por defecto (free-run)")
 
         # ───────────────────────────────
@@ -71,7 +73,7 @@ class CameraController:
         try:
             self.stream = self.cam.create_stream(None, None)
         except Exception as e:
-            print(f"❌ No se pudo crear stream: {e}")
+            print(f"❌ No se pudo crear stream (posiblemente se requiere privilegio de controlador o cámara en uso): {e}")
             self.stream = None  # Continuar sin stream para evitar crashear
 
         if self.stream:
@@ -149,29 +151,10 @@ class CameraController:
             return None, None
 
     # ---------------------------------------------------------------------
-    def get_jpeg_frame(self):
-        """Captura un frame, lo convierte a JPEG y devuelve los bytes."""
-        if self.stream is None:
-            print("❌ Stream no disponible → no se puede capturar frame para streaming")
-            return None
-
-        if self.software_trigger:
-            try:
-                self.device.execute_command("TriggerSoftware")
-            except Exception as e:
-                print(f"⚠️ Error al disparar TriggerSoftware para streaming: {e}")
-
-        buffer = None
-        t0 = time.time()
-        while buffer is None and time.time() - t0 < 2:
-            buffer_obj = self.stream.try_pop_buffer()
-            if buffer_obj:
-                buffer = buffer_obj.get_data()
-                self.stream.push_buffer(buffer_obj)  # reusar buffer
-            time.sleep(0.01)
-
-        if buffer is not None:
-            rgb_img = self.buffer_to_rgb(buffer)
+    def get_frame_as_jpeg_bytes(self):
+        """Captura un frame usando take_picture, lo convierte a JPEG y devuelve los bytes."""
+        filename, rgb_img = self.take_picture()
+        if rgb_img is not None:
             # Convertir a JPEG
             ret, jpeg = cv2.imencode('.jpg', cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR))
             return jpeg.tobytes() if ret else None

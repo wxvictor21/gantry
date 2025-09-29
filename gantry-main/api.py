@@ -18,7 +18,7 @@ import grbl_module
 
 def gen_frames():
     while True:
-        frame = camera.get_jpeg_frame()
+        frame = camera.get_frame_as_jpeg_bytes()
         if frame is not None:
             yield (b'--frame\n'
                    b'Content-Type: image/jpeg\n\n' + frame + b'\n')
