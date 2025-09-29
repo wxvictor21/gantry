@@ -11,7 +11,7 @@ from gi.repository import Aravis
 
 class CameraController:
     def __init__(self, ip="192.168.2.202", save_dir="static/photos"):
-        print(f"Conectando a la cámara en {ip} ...")
+        print(f"Conectando a la cámara Cognex en {ip} ...")
         self.cam = Aravis.Camera.new(ip)
         self.device = self.cam.get_device()
 
@@ -44,42 +44,54 @@ class CameraController:
         # Verificar si soporta RGB directo
         self.use_rgb_direct = False
         if "RGB8Packed" in supported_formats:
-            print("Usando PixelFormat = RGB8Packed (la cámara envía RGB directo)")
-            self.device.set_string_feature_value("PixelFormat", "RGB8Packed")
-            self.use_rgb_direct = True
+            try:
+                self.device.set_string_feature_value("PixelFormat", "RGB8Packed")
+                self.use_rgb_direct = True
+                print("Usando PixelFormat = RGB8Packed (la cámara envía RGB directo)")
+            except Exception as e:
+                print(f"No se pudo aplicar RGB8Packed: {e}")
+                print("Cámara no soporta RGB8Packed → se usará RAW Bayer + demosaicing")
         else:
-            print("Cámara no soporta RGB8Packed, se usará RAW Bayer + demosaicing")
+            print("Cámara no soporta RGB8Packed → se usará RAW Bayer + demosaicing")
 
-        # Configuración de trigger software
-        self.device.set_string_feature_value("TriggerMode", "On")
-        self.device.set_string_feature_value("TriggerSource", "Software")
+        # ───────────────────────────────
+        # Intentar configurar trigger software (si la cámara lo permite)
+        self.software_trigger = False
+        try:
+            self.device.set_string_feature_value("TriggerMode", "On")
+            self.device.set_string_feature_value("TriggerSource", "Software")
+            self.software_trigger = True
+            print("TriggerMode=On (Software) configurado")
+        except Exception as e:
+            print(f"No se pudo activar TriggerMode/Source: {e}")
+            print("⚠️ La cámara continuará en modo por defecto (free-run)")
 
+        # ───────────────────────────────
         # Crear stream y buffers
-        self.stream = self.cam.create_stream(None, None)
-        payload = self.cam.get_payload()
-        for _ in range(10):
-            self.stream.push_buffer(Aravis.Buffer.new_allocate(payload))
+        try:
+            self.stream = self.cam.create_stream(None, None)
+        except Exception as e:
+            print(f"❌ No se pudo crear stream: {e}")
+            self.stream = None  # Continuar sin stream para evitar crashear
 
-        self.cam.start_acquisition()
+        if self.stream:
+            payload = self.cam.get_payload()
+            for _ in range(10):
+                self.stream.push_buffer(Aravis.Buffer.new_allocate(payload))
+            self.cam.start_acquisition()
 
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
 
+    # ---------------------------------------------------------------------
     def buffer_to_rgb(self, buffer):
         """Convierte un buffer en imagen RGB aplicando demosaicing si es necesario"""
         data = np.frombuffer(buffer, dtype=np.uint8)
 
         if self.use_rgb_direct:
-            # 🔹 La cámara ya entrega RGB
             rgb = data.reshape((self.height, self.width, 3))
-
         else:
-            # 🔹 RAW Bayer → aplicar demosaicing
             raw = data.reshape((self.height, self.width))
-            print(raw.shape)
-            print(data.shape)
-            # IMPORTANTE: el patrón depende del sensor → probar RG/GB/BG/GR
-            # Aquí uso RGGB por defecto
             bgr = cv2.cvtColor(raw, cv2.COLOR_BayerBG2BGR)
 
             # Corrección de gamma
@@ -89,7 +101,7 @@ class CameraController:
             ).astype("uint8")
             bgr = cv2.LUT(bgr, table)
 
-            # Balance de blancos
+            # Balance de blancos (si OpenCV xphoto está disponible)
             try:
                 wb = cv2.xphoto.createSimpleWB()
                 bgr = wb.balanceWhite(bgr)
@@ -100,9 +112,18 @@ class CameraController:
 
         return rgb
 
+    # ---------------------------------------------------------------------
     def take_picture(self):
-        """Dispara la cámara, guarda imagen y devuelve el array RGB"""
-        self.device.execute_command("TriggerSoftware")
+        """Dispara la cámara (si es posible), guarda imagen y devuelve el array RGB"""
+        if self.stream is None:
+            print("❌ Stream no disponible → no se puede capturar imagen")
+            return None, None
+
+        if self.software_trigger:
+            try:
+                self.device.execute_command("TriggerSoftware")
+            except Exception as e:
+                print(f"⚠️ Error al disparar TriggerSoftware: {e}")
 
         buffer = None
         t0 = time.time()
@@ -116,7 +137,6 @@ class CameraController:
         if buffer is not None:
             rgb_img = self.buffer_to_rgb(buffer)
 
-            # Guardar imagen
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"{timestamp}.png"
             filepath = os.path.join(self.save_dir, filename)
@@ -125,6 +145,5 @@ class CameraController:
             print(f"Imagen guardada: {filepath}")
             return filename, rgb_img
         else:
-            print("No se recibió ningún frame")
+            print("❌ No se recibió ningún frame")
             return None, None
-
