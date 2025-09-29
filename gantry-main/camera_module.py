@@ -147,3 +147,33 @@ class CameraController:
         else:
             print("❌ No se recibió ningún frame")
             return None, None
+
+    # ---------------------------------------------------------------------
+    def get_jpeg_frame(self):
+        """Captura un frame, lo convierte a JPEG y devuelve los bytes."""
+        if self.stream is None:
+            print("❌ Stream no disponible → no se puede capturar frame para streaming")
+            return None
+
+        if self.software_trigger:
+            try:
+                self.device.execute_command("TriggerSoftware")
+            except Exception as e:
+                print(f"⚠️ Error al disparar TriggerSoftware para streaming: {e}")
+
+        buffer = None
+        t0 = time.time()
+        while buffer is None and time.time() - t0 < 2:
+            buffer_obj = self.stream.try_pop_buffer()
+            if buffer_obj:
+                buffer = buffer_obj.get_data()
+                self.stream.push_buffer(buffer_obj)  # reusar buffer
+            time.sleep(0.01)
+
+        if buffer is not None:
+            rgb_img = self.buffer_to_rgb(buffer)
+            # Convertir a JPEG
+            ret, jpeg = cv2.imencode('.jpg', cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR))
+            return jpeg.tobytes() if ret else None
+        else:
+            return None

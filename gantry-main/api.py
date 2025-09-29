@@ -11,13 +11,14 @@ from flask import Flask, Response, request, jsonify, send_from_directory, abort,
 import camera_module
 import grbl_module
 
-# Initialize camera and GRBL (Note: This will create new instances alongside existing ones)
-cam = camera_module.Camera()
-grbl = grbl_module.Grbl()
+# Initialize GRBL (Note: This will create new instances alongside existing ones)
+# The camera instantiation below is the correct one.
+# cam = camera_module.Camera() # Removed as it's causing an error and is redundant.
+
 
 def gen_frames():
     while True:
-        frame = cam.get_frame()
+        frame = camera.get_jpeg_frame()
         if frame is not None:
             yield (b'--frame\n'
                    b'Content-Type: image/jpeg\n\n' + frame + b'\n')
