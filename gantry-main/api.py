@@ -7,7 +7,24 @@ Flask API para Gantry (GRBL + Cámara)
 
 import os
 import time
-from flask import Flask, request, jsonify, send_from_directory, abort, make_response
+from flask import Flask, Response, request, jsonify, send_from_directory, abort, make_response
+import camera_module
+import grbl_module
+
+# Initialize camera and GRBL (Note: This will create new instances alongside existing ones)
+cam = camera_module.Camera()
+grbl = grbl_module.Grbl()
+
+def gen_frames():
+    while True:
+        frame = cam.get_frame()
+        if frame is not None:
+            yield (b'--frame\n'
+                   b'Content-Type: image/jpeg\n\n' + frame + b'\n')
+        else:
+            # If no frame is available, wait a bit before trying again
+            time.sleep(0.1)
+
 
 # Importa tus controladores existentes
 # Asegúrate de que camera_module.py y grbl_module.py estén en el mismo paquete/path
