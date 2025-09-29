@@ -33,7 +33,7 @@ from camera_module import CameraController
 from grbl_module import GRBLController
 
 # CONFIGURACIÓN (ajusta según tu entorno)
-CAMERA_IP = os.getenv("CAMERA_IP", "192.168.2.202")
+CAMERA_IP = "192.168.2.202"
 GRBL_PORT = os.getenv("GRBL_PORT", "/dev/ttyUSB0")
 GRBL_BAUD = int(os.getenv("GRBL_BAUD", "115200"))
 ENV = os.getenv("ENV", "development")  # "production" or "development"
@@ -53,7 +53,7 @@ if ENV == "production":
     os.makedirs(REACT_BUILD_DIR, exist_ok=True)
 
 # Instanciar controladores (puede lanzar excepciones si no hay hardware; en dev puedes mockear)
-camera = CameraController(CAMERA_IP, save_dir=PHOTOS_DIR)
+camera = CameraController(CAMERA_IP)
 grbl = GRBLController(GRBL_PORT, GRBL_BAUD)
 
 # App Flask
