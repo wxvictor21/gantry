@@ -6,12 +6,25 @@ class GRBLController:
         self.ser = serial.Serial(port, baudrate, timeout=1)
 
     def send(self, cmd):
+        """Sends a command to GRBL and waits for an 'ok' or 'error' response."""
+        print(f"Sending to GRBL: {cmd}")
+        self.ser.reset_input_buffer()
         self.ser.write((cmd + '\n').encode())
-        time.sleep(0.1)
-        response = []
-        while self.ser.in_waiting:
-            response.append(self.ser.readline().decode().strip())
-        return response
+        
+        response_lines = []
+        t0 = time.time()
+        while time.time() - t0 < 2.0: # 2 second timeout
+            line = self.ser.readline().decode().strip()
+            if line:
+                print(f"GRBL response: {line}")
+                response_lines.append(line)
+                if 'ok' in line or 'error' in line:
+                    break
+        
+        if not response_lines:
+            print("GRBL did not respond.")
+
+        return response_lines
 
     def move(self, x_units, y_units, f=1500):
         """Convierte unidades en mm y envía comando de movimiento"""
