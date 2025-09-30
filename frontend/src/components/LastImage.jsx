@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { gallery } from '../services/api';
-
-const API_BASE = "http://192.168.2.67:5000";
+import { gallery, API_BASE } from '../services/api';
 
 export default function LastImage() {
   const [lastImage, setLastImage] = useState(null);
@@ -10,8 +8,8 @@ export default function LastImage() {
     const fetchLastImage = async () => {
       try {
         const response = await gallery();
-        if (response.images && response.images.length > 0) {
-          const last = response.images[response.images.length - 1];
+        if (response.photos && response.photos.length > 0) {
+          const last = response.photos[response.photos.length - 1];
           setLastImage(last);
         }
       } catch (error) {
@@ -29,7 +27,7 @@ export default function LastImage() {
     <div style={{ marginLeft: '2rem' }}>
       <h2>Última Imagen Guardada</h2>
       {lastImage ? (
-        <img src={`${API_BASE}/${lastImage}`} alt="Last saved" style={{ width: '100%' }} />
+        <img src={API_BASE + lastImage} alt="Last saved" style={{ width: '100%' }} />
       ) : (
         <p>No hay imágenes guardadas.</p>
       )}

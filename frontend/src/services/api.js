@@ -1,5 +1,5 @@
 
-const API_BASE = "http://192.168.2.67:5000"; // Adjust to your Raspberry Pi IP and port
+export const API_BASE = "http://192.168.2.67:5000"; // Adjust to your Raspberry Pi IP and port
 
 export async function moveCamera(x,y,f=1500){
   const res = await fetch(`${API_BASE}/api/move`, {
