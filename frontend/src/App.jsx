@@ -11,12 +11,15 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem' }}>
-              <div style={{ flex: 1 }}>
-                <MotorControl />
-              </div>
-              <div style={{ flex: 1 }}>
-                <LastImage />
+            <div>
+              <h1>Control</h1>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem' }}>
+                <div style={{ flex: 1 }}>
+                  <MotorControl />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <LastImage />
+                </div>
               </div>
             </div>
           } />
