@@ -35,6 +35,8 @@ from grbl_module import GRBLController
 GRBL_PORT = "/dev/ttyUSB0"
 GRBL_BAUD = 115200
 
+CAMERA_IP = "192.168.2.202"
+
 # Directorio para imágenes y para servir React build en producción
 BASE_DIR = os.path.dirname(__file__)
 PHOTOS_DIR = os.path.join(BASE_DIR, "static", "photos")
@@ -142,5 +144,6 @@ def sequence():
 # (Opcional) Servir React build en producción
 # ----------------------------
 if __name__ == "__main__":
-    # Nota: en producción usa gunicorn/uWSGI y nginx; el dev server de Flask NO es recomendado para producción.
-    app.run(host="0.0.0.0", port=5000)
+    # The host='0.0.0.0' parameter makes the app publicly available on your network.
+    # Note: The Flask development server is not recommended for production use.
+    app.run(host="0.0.0.0", port=5000, debug=True)
