@@ -39,7 +39,7 @@ export default function SliderInput({ label, value, onChange, min = -100, max = 
         max={max}
         value={value}
         onChange={handleSliderChange}
-        style={{ flex: 1 }}
+        style={{ flex: 1, cursor: 'pointer' }}
       />
       {isEditing ? (
         <input

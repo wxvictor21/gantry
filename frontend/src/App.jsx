@@ -11,11 +11,11 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem' }}>
               <div style={{ flex: 1 }}>
                 <MotorControl />
               </div>
-              <div style={{ flex: 1.5 }}>
+              <div style={{ flex: 1 }}>
                 <LastImage />
               </div>
             </div>

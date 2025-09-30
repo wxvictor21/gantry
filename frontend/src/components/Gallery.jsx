@@ -21,7 +21,7 @@ export default function Gallery() {
         <div>
           {photos.map(photo => (
             <div key={photo} style={{display: 'inline-block', textAlign: 'center', margin: '1rem'}}>
-              <img src={API_BASE + photo} style={{maxWidth: 400, border: '1px solid #ccc', padding: '0.5rem', borderRadius: '5px'}} /><br />
+              <img src={API_BASE + photo} style={{maxWidth: 400, border: '1px solid #ccc', padding: '0.5rem', borderRadius: '15px'}} /><br />
               <span>{photo}</span>
             </div>
           ))}

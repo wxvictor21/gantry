@@ -27,7 +27,7 @@ export default function LastImage() {
     <div style={{ marginLeft: '2rem' }}>
       <h2>Última Imagen Guardada</h2>
       {lastImage ? (
-        <img src={API_BASE + lastImage} alt="Last saved" style={{ width: '100%' }} />
+        <img src={API_BASE + lastImage} alt="Last saved" style={{ width: '100%', border: '1px solid #ccc', padding: '0.5rem', borderRadius: '15px' }} />
       ) : (
         <p>No hay imágenes guardadas.</p>
       )}
