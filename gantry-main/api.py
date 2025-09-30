@@ -8,6 +8,7 @@ Flask API para Gantry (GRBL + Cámara)
 import os
 import time
 from flask import Flask, Response, request, jsonify, send_from_directory, abort, make_response
+from flask_cors import CORS
 import camera_module
 import grbl_module
 
@@ -53,6 +54,7 @@ grbl = GRBLController(GRBL_PORT, GRBL_BAUD)
 
 # App Flask
 app = Flask(__name__)
+CORS(app)
 
 # ----------------------------
 # Endpoints API
