@@ -28,8 +28,9 @@ class GRBLController:
 
     def move(self, x_units, y_units, f=1500):
         """Convierte unidades en mm y envía comando de movimiento"""
-        x_mm = float(x_units) / 50.0   # 1 unidad en X = 50 mm
-        y_mm = float(y_units) / 10.0   # 1 unidad en Y = 10 mm
+        # Apply offset so slider minimums correspond to machine 0
+        x_mm = float(x_units) + 150
+        y_mm = float(y_units) + 180
         cmd = f'G1 X{x_mm:.2f} Y{y_mm:.2f} F{f}'
         resp = self.send(cmd)
         return cmd, resp
