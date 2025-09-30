@@ -12,7 +12,7 @@ export default function MotorControl(){
     setStatus('Moving...')
     const moveRes = await moveCamera(Number(x), Number(y), 1500)
     setStatus(JSON.stringify(moveRes))
-    if (moveRes.success) {
+    if (!moveRes.error) {
       setStatus('Capturing...')
       const captureRes = await captureImage()
       setStatus(JSON.stringify(captureRes))

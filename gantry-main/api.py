@@ -146,4 +146,4 @@ def sequence():
 if __name__ == "__main__":
     # The host='0.0.0.0' parameter makes the app publicly available on your network.
     # Note: The Flask development server is not recommended for production use.
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
